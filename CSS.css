@@ -1,0 +1,21 @@
+#canvasBox{
+    border: 1px solid black;
+}
+#container{
+    margin: 30px;
+    display: flex;
+}
+#btnContainer{
+    display: flex;
+    flex-direction: column;
+}
+#btnContainer>button{
+    height: 50px;
+    width: 50px;
+    font-size: 40px;
+}
+#infoBox{
+    border: 1px solid black;
+    height: 200px;
+    width: 400px;
+}
