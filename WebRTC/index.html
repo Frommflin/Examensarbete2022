@@ -3,9 +3,24 @@
     <head>
         <title>Drawingtool WebRTC</title>
         <meta charset="utf-8">
+        <link rel="stylesheet" href="../CSS.css">
     </head>
     <body>
         <h1>Drawingtool; WebRTC</h1>
-        <canvas id="canvasBox" width="900" height="500"></canvas>
+        <div>
+            <input type="text" placeholder="Name">
+            <button disabled> Connect </button>
+        </div>
+        <div id="container">
+            <div id="btnContainer">
+                <button disabled id="opt1"> ─ </button>
+                <button disabled id="opt2"> ■ </button>
+                <button disabled id="opt3"> • </button>
+            </div>
+            <canvas id="canvasBox" width="900" height="500"></canvas>
+        </div>
+        <div id="infoBox">
+            Connections:
+        </div>
     </body>
 </html>
