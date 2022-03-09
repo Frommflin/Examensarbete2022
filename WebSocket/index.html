@@ -5,11 +5,15 @@
         <meta charset="utf-8">
         <link rel="stylesheet" href="../CSS.css">
         <script>
-            function checkName(){
-                var name = document.getElementById("namebox").value;
-                var connect = document.getElementById("conecctbtn");
+            var nameInput;
+            var connect;
+            var optBtns = document.getElementsByClassName("optBtns");
 
-                if((name == null) || (name == "")){
+            function checkName(){
+                nameInput = document.getElementById("namebox");
+                connect = document.getElementById("conecctbtn");
+
+                if((nameInput.value == null) || (nameInput.value == "")){
                     connect.disabled = true;
                     connect.style.color = "lightgrey";
                 } else{
@@ -17,19 +21,29 @@
                     connect.style.color = "blue";
                 }
             }
+
+            function connectToServer(){
+                connect.innerHTML = "Connected";
+                connect.style.color = "green";
+                connect.disabled = true;
+                nameInput.disabled = true;               
+                for (var i = 0; i<optBtns.length; i++){
+                    optBtns[i].disabled = false;
+                }
+            }
         </script>
     </head>
     <body onload="checkName()">
         <h1>Drawingtool; WebSockets</h1>
         <div>
-            <input type="text" id="namebox" placeholder="Username" onchange="checkName()">
-            <button id="conecctbtn"> Connect </button>
+            <input type="text" id="namebox" placeholder="Username" onkeyup="checkName()">
+            <button id="conecctbtn" onclick="connectToServer()"> Connect </button>
         </div>
         <div id="container">
             <div id="btnContainer">
-                <button disabled id="opt1"> ─ </button>
-                <button disabled id="opt2"> ■ </button>
-                <button disabled id="opt3"> • </button>
+                <button disabled id="opt1" class="optBtns"> ─ </button>
+                <button disabled id="opt2" class="optBtns"> ■ </button>
+                <button disabled id="opt3" class="optBtns"> • </button>
             </div>
             <canvas id="canvasBox" width="900" height="500"></canvas>
         </div>
