@@ -4,12 +4,26 @@
         <title>Drawingtool WebRTC</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="../CSS.css">
+        <script>
+            function checkName(){
+                var name = document.getElementById("namebox").value;
+                var connect = document.getElementById("conecctbtn");
+
+                if((name == null) || (name == "")){
+                    connect.disabled = true;
+                    connect.style.color = "lightgrey";
+                } else{
+                    connect.disabled = false;
+                    connect.style.color = "blue";
+                }
+            }
+        </script>
     </head>
-    <body>
+    <body onload="checkName()">
         <h1>Drawingtool; WebRTC</h1>
         <div>
-            <input type="text" placeholder="Name">
-            <button disabled> Connect </button>
+            <input type="text" id="namebox" placeholder="Username" onchange="checkName()">
+            <button id="conecctbtn"> Connect </button>
         </div>
         <div id="container">
             <div id="btnContainer">
