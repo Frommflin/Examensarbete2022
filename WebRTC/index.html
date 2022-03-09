@@ -7,7 +7,10 @@
         <script>
             var nameInput;
             var connect;
-            var optBtns = document.getElementsByClassName("optBtns");
+            var drawShape; //line=1, square=2, circle=3
+            var ctx; 
+            var mx = 0;
+            var my = 0;
 
             function checkName(){
                 nameInput = document.getElementById("namebox");
@@ -21,15 +24,41 @@
                     connect.style.color = "blue";
                 }
             }
-
             function connectToServer(){
                 connect.innerHTML = "Connected";
                 connect.style.color = "green";
                 connect.disabled = true;
                 nameInput.disabled = true;               
-                for (var i = 0; i<optBtns.length; i++){
-                    optBtns[i].disabled = false;
+                changeShape(1);
+            }
+            function changeShape(nr){
+                var optBtns = document.getElementsByClassName("optBtns");
+                for(var a = 0; a<optBtns.length; a++){
+                    var option = optBtns[a];
+                    option.style.color = "black";
+                    option.disabled = false;
                 }
+                var active = document.getElementById("opt"+nr);
+                active.disabled = true;
+                active.style.color = "green";
+                drawShape = nr;
+            }
+
+            
+            function startCanvas(){
+                var canvas = document.getElementById("canvasBox");
+                ctx = canvas.getContext("2d");
+
+                //Prevents menu from being displayed on right-cklick in canvas element
+                canvas.addEventListener("contextmenu", function(event){ //remove this to allow saving picture
+                    event.preventDefault();
+                }, false);
+            }
+
+            function mouseMove(e, t){ //keeping track of the mouse coordinates within the canvas
+                var box = e.target.getBoundingClientRect();
+                mx = e.clientX - box.left; // mouse x-coordinate
+                my = e.clientY - box.top;  // mouse y-coordinate
             }
         </script>
     </head>
@@ -41,11 +70,11 @@
         </div>
         <div id="container">
             <div id="btnContainer">
-                <button disabled id="opt1" class="optBtns"> ─ </button>
-                <button disabled id="opt2" class="optBtns"> ■ </button>
-                <button disabled id="opt3" class="optBtns"> • </button>
+                <button disabled id="opt1" class="optBtns" onclick="changeShape(1)"> ─ </button>
+                <button disabled id="opt2" class="optBtns" onclick="changeShape(2)"> ■ </button>
+                <button disabled id="opt3" class="optBtns" onclick="changeShape(3)"> • </button>
             </div>
-            <canvas id="canvasBox" width="900" height="500"></canvas>
+            <canvas id="canvasBox" width="900" height="500" onmousemove="mouseMove(event, this)"></canvas>
         </div>
         <div>
             Connections:
