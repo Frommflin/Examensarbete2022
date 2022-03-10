@@ -8,9 +8,9 @@
             var nameInput;
             var connect;
             var drawShape; //line=1, square=2, circle=3
-            var ctx; 
-            var mx = 0;
-            var my = 0;
+            var draw; 
+            var mx1, mx2;
+            var my1, my2;
 
             function checkName(){
                 nameInput = document.getElementById("namebox");
@@ -43,26 +43,99 @@
                 active.style.color = "green";
                 drawShape = nr;
             }
-
-            
             function startCanvas(){
                 var canvas = document.getElementById("canvasBox");
-                ctx = canvas.getContext("2d");
-
-                //Prevents menu from being displayed on right-cklick in canvas element
-                canvas.addEventListener("contextmenu", function(event){ //remove this to allow saving picture
-                    event.preventDefault();
-                }, false);
+                draw = canvas.getContext("2d");
             }
+            function mouseDown(e){ //should start drawing of chosen shape
+                var box = e.target.getBoundingClientRect();
+                mx1 = e.clientX - box.left; // mouse x-coordinate
+                my1 = e.clientY - box.top;  // mouse y-coordinate
+                console.log(`Starting coordinates: x = ${mx1}, y = ${my1}`);
 
+                if (event.which == 2){
+                    event.preventDefault(); //Limits menu to save/copy image
+                }
+            }
             function mouseMove(e, t){ //keeping track of the mouse coordinates within the canvas
                 var box = e.target.getBoundingClientRect();
-                mx = e.clientX - box.left; // mouse x-coordinate
-                my = e.clientY - box.top;  // mouse y-coordinate
+                mx2 = e.clientX - box.left; // mouse x-coordinate
+                my2 = e.clientY - box.top;  // mouse y-coordinate
+            }
+            function mouseUp(e){
+                var box = e.target.getBoundingClientRect();
+                mx2 = e.clientX - box.left; // mouse x-coordinate
+                my2 = e.clientY - box.top;  // mouse y-coordinate
+
+                console.log(`End coordinates: x = ${mx2}, y = ${my2}`);
+
+                //call drawing function
+                if(drawShape == 1) { //This works but does not show until finished
+                    drawLine(mx1, my1, mx2, my2);
+                } else if (drawShape == 2) {
+                    drawRect(mx1, my1, mx2, my2);
+                } else {
+                    drawCircle(mx1, my1, mx2, my2);
+                }
+            }
+            function drawRect(x1, y1, x2, y2){
+                draw.strokeStyle="#000000"; //color of outline
+                draw.lineWidth = 2; //px width of stroke
+                draw.fillStyle = "#00ff00"; //internal color of shape
+
+                draw.beginPath();
+                draw.moveTo(x1, y1);
+                draw.lineTo(x2,y1);
+                draw.lineTo(x2,y2);
+                draw.lineTo(x1,y2);
+                draw.lineTo(x1,y1);
+                draw.closePath();
+                draw.fill();
+                draw.stroke();
+            }
+            function drawLine(x1, y1, x2, y2){
+                draw.strokeStyle="#000000"; //color of outline
+                draw.lineWidth = 2; //px width of stroke
+
+                draw.beginPath();
+                draw.moveTo(x1, y1);
+                draw.lineTo(x2,y2);
+                draw.closePath();
+                draw.stroke();
+            }
+            function drawCircle(x1, y1, x2, y2){
+                draw.strokeStyle="#000000"; //color of outline
+                draw.lineWidth = 2; //px width of stroke
+                draw.fillStyle = "#0000ff"; //internal color of shape
+
+                var x;
+                var y;
+
+                if (x1 > x2){
+                    x = x1 - x2;
+                } else if (x1 < x2) {
+                    x = x2 - x1;
+                } else {
+                    x = 10;
+                }
+                if (y1 > y2){
+                    y = y1 - y2;
+                } else if (y1 < y2) {
+                    y = y2 - y1;
+                } else {
+                    y = 10;
+                }
+
+                var radius = Math.hypot(x, y);
+                draw.beginPath();
+                draw.arc(x1, y1, radius, 0, 2*Math.PI);
+                draw.closePath();
+                draw.fill();
+                draw.stroke();
             }
         </script>
     </head>
-    <body onload="checkName()">
+    <body onload="checkName(); startCanvas()">
         <h1>Drawingtool; WebRTC</h1>
         <div>
             <input type="text" id="namebox" placeholder="Username" onkeyup="checkName()">
@@ -74,7 +147,7 @@
                 <button disabled id="opt2" class="optBtns" onclick="changeShape(2)"> ■ </button>
                 <button disabled id="opt3" class="optBtns" onclick="changeShape(3)"> • </button>
             </div>
-            <canvas id="canvasBox" width="900" height="500" onmousemove="mouseMove(event, this)"></canvas>
+            <canvas id="canvasBox" width="900" height="500" onmousemove="mouseMove(event, this)" onmousedown="mouseDown(event)" onmouseup="mouseUp(event)"></canvas>
         </div>
         <div>
             Connections:
