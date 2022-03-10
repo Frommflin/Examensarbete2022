@@ -26,3 +26,16 @@
     height: 200px;
     width: 400px;
 }
+.settingBox{
+    margin-bottom: 10px;
+}
+input[type=color]{
+    height: 100px;
+    width: 100px;
+}
+input[type=number]{
+    width: 90px;
+}
+h4{
+    margin: 0;
+}

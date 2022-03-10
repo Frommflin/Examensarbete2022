@@ -9,6 +9,8 @@
             var connect;
             var drawShape; //line=1, square=2, circle=3
             var draw; 
+            var fillColor = "#000000";
+            var strokeColor = "#000000";
             var mx1, mx2;
             var my1, my2;
 
@@ -79,10 +81,6 @@
                 }
             }
             function drawRect(x1, y1, x2, y2){
-                draw.strokeStyle="#000000"; //color of outline
-                draw.lineWidth = 2; //px width of stroke
-                draw.fillStyle = "#00ff00"; //internal color of shape
-
                 draw.beginPath();
                 draw.moveTo(x1, y1);
                 draw.lineTo(x2,y1);
@@ -94,9 +92,6 @@
                 draw.stroke();
             }
             function drawLine(x1, y1, x2, y2){
-                draw.strokeStyle="#000000"; //color of outline
-                draw.lineWidth = 2; //px width of stroke
-
                 draw.beginPath();
                 draw.moveTo(x1, y1);
                 draw.lineTo(x2,y2);
@@ -104,10 +99,6 @@
                 draw.stroke();
             }
             function drawCircle(x1, y1, x2, y2){
-                draw.strokeStyle="#000000"; //color of outline
-                draw.lineWidth = 2; //px width of stroke
-                draw.fillStyle = "#0000ff"; //internal color of shape
-
                 var x;
                 var y;
 
@@ -136,6 +127,17 @@
             function clearSpace(){
                 draw.clearRect(0,0,900,500);
             }
+            function setFill(color){
+                fillColor = color;
+                draw.fillStyle = fillColor;
+            }
+            function setStroke(color){
+                strokeColor = color;
+                draw.strokeStyle = strokeColor;
+            }
+            function setWidth(pixels){
+                draw.lineWidth = pixels;
+            }
 
 
         </script>
@@ -158,6 +160,21 @@
                 </div>
             </div>
             <canvas id="canvasBox" width="900" height="500" onmousemove="mouseMove(event, this)" onmousedown="mouseDown(event)" onmouseup="mouseUp(event)"></canvas>
+            <div id="settings">
+                <!-- colorpickers -->
+                <div class="settingBox">
+                    <h4>Fill Color</h4>
+                    <input type="color" id="fillColor" onchange="setFill(this.value)">
+                </div>
+                <div class="settingBox">
+                    <h4>Stroke color</h4>
+                    <input type="color" id="strokeColor" onchange="setStroke(this.value)">
+                </div>
+                <div class="settingBox">
+                    <h4>Stroke width</h4>
+                    <input type="number" min="1" max="20" value="1" id="strokeSize" onchange="setWidth(this.value)" >
+                </div>
+            </div>
         </div>
         <div>
             Connections:
