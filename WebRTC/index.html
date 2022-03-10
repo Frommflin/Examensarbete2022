@@ -74,7 +74,7 @@
                     drawLine(mx1, my1, mx2, my2);
                 } else if (drawShape == 2) {
                     drawRect(mx1, my1, mx2, my2);
-                } else {
+                } else if (drawShape == 3) {
                     drawCircle(mx1, my1, mx2, my2);
                 }
             }
@@ -133,6 +133,11 @@
                 draw.fill();
                 draw.stroke();
             }
+            function clearSpace(){
+                draw.clearRect(0,0,900,500);
+            }
+
+
         </script>
     </head>
     <body onload="checkName(); startCanvas()">
@@ -143,9 +148,14 @@
         </div>
         <div id="container">
             <div id="btnContainer">
-                <button disabled id="opt1" class="optBtns" onclick="changeShape(1)"> ─ </button>
-                <button disabled id="opt2" class="optBtns" onclick="changeShape(2)"> ■ </button>
-                <button disabled id="opt3" class="optBtns" onclick="changeShape(3)"> • </button>
+                <div id="btnBox">
+                    <button disabled id="opt1" class="optBtns" onclick="changeShape(1)"> ─ </button>
+                    <button disabled id="opt2" class="optBtns" onclick="changeShape(2)"> ■ </button>
+                    <button disabled id="opt3" class="optBtns" onclick="changeShape(3)"> • </button>
+                </div>
+                <div>
+                    <button onclick="clearSpace()"> Clear </button>
+                </div>
             </div>
             <canvas id="canvasBox" width="900" height="500" onmousemove="mouseMove(event, this)" onmousedown="mouseDown(event)" onmouseup="mouseUp(event)"></canvas>
         </div>

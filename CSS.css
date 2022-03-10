@@ -8,10 +8,17 @@
 #btnContainer{
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
-#btnContainer>button{
+#btnBox{
+    display: flex;
+    flex-direction: column;
+}
+#btnContainer button{
     height: 50px;
     width: 50px;
+}
+#btnBox button{
     font-size: 40px;
 }
 #infoBox{
