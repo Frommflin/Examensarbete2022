@@ -5,22 +5,18 @@
         <meta charset="utf-8">
         <link rel="stylesheet" href="../CSS.css">
         <script>
-            const ws = new WebSocket("ws://localhost:8082");
-            var info;
-            var nameInput;
-            var connect;
-            var drawShape; //line=1, square=2, circle=3
-            var draw; 
+            const ws = new WebSocket("ws://localhost:8082"); //uppdate with link for server? wss for secure websockets
+            var messageBox, nameInput, connect, drawShape;
+            var draw, mx1, mx2, my1, my2;
             var fillColor = "#000000";
             var strokeColor = "#000000";
-            var mx1, mx2;
-            var my1, my2;
+            
 
             function initServer(){
-                info = document.getElementById("infoBox");
+                messageBox = document.getElementById("infoBox");
                 ws.addEventListener("open", () => {
                     console.log("You are connected to the server!");
-                    info.innerHTML += "You are connected to the server!";
+                    messageBox.innerHTML += "You are connected to the server! <br>";
                 })
             }
 
@@ -40,7 +36,8 @@
                 connect.innerHTML = "Connected";
                 connect.style.color = "green";
                 connect.disabled = true;
-                nameInput.disabled = true;               
+                nameInput.disabled = true;   
+                messageBox.innerHTML += "Your username for this session is " + nameInput.value;            
                 changeShape(1);
             }
             function changeShape(nr){
