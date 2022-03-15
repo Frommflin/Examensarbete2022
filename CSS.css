@@ -40,3 +40,8 @@ input[type=number]{
 h4{
     margin: 0;
 }
+.username{
+    font-weight: bold;
+    color: darkslateblue;
+    font-family: Arial, Helvetica, sans-serif;
+}

@@ -5,59 +5,77 @@
         <meta charset="utf-8">
         <link rel="stylesheet" href="../CSS.css">
         <script>
-            const ws = new WebSocket("ws://localhost:8082"); //uppdate with link for server? wss for secure websockets
+            const ws = new WebSocket(`ws://localhost:8082`); //uppdate with link for server? wss for secure websockets
             var draw = false;
-            var messageBox, nameInput, connect, drawShape;
+            var messageBox, userName, nameInput, connect, drawShape;
             var canvas, ctx, startCoordinates, canvasMemory;
             var fillColor, strokeColor;
             
-
             function initServer(){
-                messageBox = document.getElementById("infoBox");
-                ws.addEventListener("open", () => {
-                    console.log("You are connected to the server!");
-                    messageBox.innerHTML += "You are connected to the server! <br>";
+                messageBox = document.getElementById(`infoBox`);
+                
+                ws.addEventListener(`open`, () => {
+                    messageBox.innerHTML += `You are connected to the server! <br>`;
+                });
+
+                ws.addEventListener(`message`, data => {
+                    var message = JSON.parse(data.data);
+                    switch(message.type) { 
+                        case `new_user`: 
+                            messageBox.innerHTML += `<span class="username">${message.name}</span> has connected to the server <br>`;
+                            break;  
+                        default: 
+                            break; 
+                    }; 
                 })
             }
             function checkName(){
-                nameInput = document.getElementById("namebox");
-                connect = document.getElementById("conecctbtn");
+                nameInput = document.getElementById(`namebox`);
+                userName = nameInput.value;
+                connect = document.getElementById(`conecctbtn`);
 
-                if((nameInput.value == null) || (nameInput.value == "")){
+                if((userName == null) || (userName == "")){
                     connect.disabled = true;
-                    connect.style.color = "lightgrey";
+                    connect.style.color = `lightgrey`;
                 } else{
                     connect.disabled = false;
-                    connect.style.color = "blue";
+                    connect.style.color = `blue`;
                 }
             }
             function connectToServer(){
-                connect.innerHTML = "Connected";
-                connect.style.color = "green";
+
+                var message = {
+                    type: `NEW_USER`,
+                    name: userName
+                };
+                ws.send(JSON.stringify(message));
+
+                connect.innerHTML = `Connected`;
+                connect.style.color = `green`;
                 connect.disabled = true;
                 nameInput.disabled = true;   
-                messageBox.innerHTML += "Your username for this session is " + nameInput.value;            
+                messageBox.innerHTML += `Your username for this session is <span class="username">${userName}</span>`;            
                 changeShape(1);
             }
             function changeShape(nr){
-                var optBtns = document.getElementsByClassName("optBtns");
+                var optBtns = document.getElementsByClassName(`optBtns`);
                 for(var a = 0; a<optBtns.length; a++){
                     var option = optBtns[a];
-                    option.style.color = "black";
+                    option.style.color = `black`;
                     option.disabled = false;
                 }
-                var active = document.getElementById("opt"+nr);
+                var active = document.getElementById(`opt${nr}`);
                 active.disabled = true;
-                active.style.color = "green";
+                active.style.color = `green`;
                 drawShape = nr;
             }
             function startCanvas(){
-                canvas = document.getElementById("canvasBox");
-                var fillInput = document.getElementById("fillColor");
-                var strokeColorInput = document.getElementById("strokeColor");
-                var strokeWidthInput = document.getElementById("strokeSize");
+                canvas = document.getElementById(`canvasBox`);
+                var fillInput = document.getElementById(`fillColor`);
+                var strokeColorInput = document.getElementById(`strokeColor`);
+                var strokeWidthInput = document.getElementById(`strokeSize`);
 
-                ctx = canvas.getContext("2d");
+                ctx = canvas.getContext(`2d`);
                 ctx.fillStyle = fillInput.value;
                 ctx.strokeStyle = strokeColorInput.value;
                 ctx.lineWidth = strokeWidthInput.value;
@@ -66,7 +84,6 @@
                 var box = event.target.getBoundingClientRect();
                 var mx = event.clientX - box.left; // mouse x-coordinate
                 var my = event.clientY - box.top;  // mouse y-coordinate
-
                 return {x: mx, y: my};
             }
             function saveImage(){
