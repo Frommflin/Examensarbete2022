@@ -6,10 +6,10 @@
         <link rel="stylesheet" href="../CSS.css">
         <script>
             const ws = new WebSocket("ws://localhost:8082"); //uppdate with link for server? wss for secure websockets
+            var draw = false;
             var messageBox, nameInput, connect, drawShape;
-            var draw, mx1, mx2, my1, my2;
-            var fillColor = "#000000";
-            var strokeColor = "#000000";
+            var canvas, ctx, startCoordinates, canvasMemory;
+            var fillColor, strokeColor;
             
 
             function initServer(){
@@ -19,7 +19,6 @@
                     messageBox.innerHTML += "You are connected to the server! <br>";
                 })
             }
-
             function checkName(){
                 nameInput = document.getElementById("namebox");
                 connect = document.getElementById("conecctbtn");
@@ -53,62 +52,90 @@
                 drawShape = nr;
             }
             function startCanvas(){
-                var canvas = document.getElementById("canvasBox");
-                draw = canvas.getContext("2d");
-            }
-            function mouseDown(e){ //should start drawing of chosen shape
-                var box = e.target.getBoundingClientRect();
-                mx1 = e.clientX - box.left; // mouse x-coordinate
-                my1 = e.clientY - box.top;  // mouse y-coordinate
-                console.log(`Starting coordinates: x = ${mx1}, y = ${my1}`);
+                canvas = document.getElementById("canvasBox");
+                var fillInput = document.getElementById("fillColor");
+                var strokeColorInput = document.getElementById("strokeColor");
+                var strokeWidthInput = document.getElementById("strokeSize");
 
+                ctx = canvas.getContext("2d");
+                ctx.fillStyle = fillInput.value;
+                ctx.strokeStyle = strokeColorInput.value;
+                ctx.lineWidth = strokeWidthInput.value;
+            }
+            function getCanvasCoordinates(event){
+                var box = event.target.getBoundingClientRect();
+                var mx = event.clientX - box.left; // mouse x-coordinate
+                var my = event.clientY - box.top;  // mouse y-coordinate
+
+                return {x: mx, y: my};
+            }
+            function saveImage(){
+                canvasMemory = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            }
+            function restoreImage(){
+                ctx.putImageData(canvasMemory, 0, 0);
+            }
+            function mouseDown(event){;
                 if (event.which == 2){
                     event.preventDefault(); //Limits menu to save/copy image
                 }
+                if (event.which == 1){
+                    draw = true;
+                    startCoordinates = getCanvasCoordinates(event);
+                    console.log(`Starting coordinates: x = ${startCoordinates.x}, y = ${startCoordinates.y}`);
+                    saveImage();
+                }
             }
-            function mouseMove(e, t){ //keeping track of the mouse coordinates within the canvas
-                var box = e.target.getBoundingClientRect();
-                mx2 = e.clientX - box.left; // mouse x-coordinate
-                my2 = e.clientY - box.top;  // mouse y-coordinate
+            function mouseUp(event){
+                if (event.which == 1){
+                    draw = false;
+                    restoreImage();
+                    var position = getCanvasCoordinates(event);
+                    console.log(`End coordinates: x = ${position.x}, y = ${position.y}`);
+                    drawShapes(position);
+                }
             }
-            function mouseUp(e){
-                var box = e.target.getBoundingClientRect();
-                mx2 = e.clientX - box.left; // mouse x-coordinate
-                my2 = e.clientY - box.top;  // mouse y-coordinate
-
-                console.log(`End coordinates: x = ${mx2}, y = ${my2}`);
-
-                //call drawing function
-                if(drawShape == 1) { //This works but does not show until finished
-                    drawLine(mx1, my1, mx2, my2);
-                } else if (drawShape == 2) {
-                    drawRect(mx1, my1, mx2, my2);
-                } else if (drawShape == 3) {
-                    drawCircle(mx1, my1, mx2, my2);
+            function mouseMove(e, t){
+                if (draw === true){
+                    restoreImage();
+                    var position = getCanvasCoordinates(e);
+                    drawShapes(position);
+                } else {
+                    return;
+                }
+            }
+            function drawShapes(endCoordinates){
+                if(drawShape == 1) { 
+                    drawLine(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y);
+                }
+                if (drawShape == 2) {
+                    drawRect(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y);
+                }
+                if (drawShape == 3) {
+                    drawCircle(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y);
                 }
             }
             function drawRect(x1, y1, x2, y2){
-                draw.beginPath();
-                draw.moveTo(x1, y1);
-                draw.lineTo(x2,y1);
-                draw.lineTo(x2,y2);
-                draw.lineTo(x1,y2);
-                draw.lineTo(x1,y1);
-                draw.closePath();
-                draw.fill();
-                draw.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2,y1);
+                ctx.lineTo(x2,y2);
+                ctx.lineTo(x1,y2);
+                ctx.lineTo(x1,y1);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
             }
             function drawLine(x1, y1, x2, y2){
-                draw.beginPath();
-                draw.moveTo(x1, y1);
-                draw.lineTo(x2,y2);
-                draw.closePath();
-                draw.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2,y2);
+                ctx.closePath();
+                ctx.stroke();
             }
             function drawCircle(x1, y1, x2, y2){
                 var x;
                 var y;
-
                 if (x1 > x2){
                     x = x1 - x2;
                 } else if (x1 < x2) {
@@ -125,30 +152,26 @@
                 }
 
                 var radius = Math.hypot(x, y);
-                draw.beginPath();
-                draw.arc(x1, y1, radius, 0, 2*Math.PI);
-                draw.closePath();
-                draw.fill();
-                draw.stroke();
+                ctx.beginPath();
+                ctx.arc(x1, y1, radius, 0, 2*Math.PI);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
             }
             function clearSpace(){
-                draw.clearRect(0,0,900,500);
+                ctx.clearRect(0,0,900,500);
             }
             function setFill(color){
                 fillColor = color;
-                draw.fillStyle = fillColor;
+                ctx.fillStyle = fillColor;
             }
             function setStroke(color){
                 strokeColor = color;
-                draw.strokeStyle = strokeColor;
+                ctx.strokeStyle = strokeColor;
             }
             function setWidth(pixels){
-                draw.lineWidth = pixels;
+                ctx.lineWidth = pixels;
             }
-            
-            
-            
-        
         </script>
     </head>
     <body onload="initServer(); checkName(); startCanvas()">
@@ -173,7 +196,7 @@
                 <!-- colorpickers -->
                 <div class="settingBox">
                     <h4>Fill Color</h4>
-                    <input type="color" id="fillColor" onchange="setFill(this.value)">
+                    <input type="color" id="fillColor" value="#56ae9f" onchange="setFill(this.value)">
                 </div>
                 <div class="settingBox">
                     <h4>Stroke color</h4>
@@ -181,7 +204,7 @@
                 </div>
                 <div class="settingBox">
                     <h4>Stroke width</h4>
-                    <input type="number" min="1" max="20" value="1" id="strokeSize" onchange="setWidth(this.value)" >
+                    <input type="number" min="1" max="20" value="2" id="strokeSize" onchange="setWidth(this.value)" >
                 </div>
             </div>
         </div>
