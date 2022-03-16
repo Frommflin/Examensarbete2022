@@ -16,14 +16,30 @@ server.on(`connection`, ws => {
         } catch (error) {
             console.log(error);
         }
-        //Different handlers depending on message type
+        console.log(`Message: \n`);
+        console.log(message);
         switch(message.type) { 
             case `NEW_USER`: 
                 console.log(`Client has submitted a namne: ${message.name}`);
                 response = {
-                    type: "new_user",
+                    type: `new_user`,
                     name: message.name
                 };
+                server.clients.forEach((client) => {
+                    if ((client != ws) && (client.readyState === WebSocket.OPEN)) {
+                        client.send(JSON.stringify(response));
+                    }
+                });
+                break;
+            case `NEW_SHAPE`:
+                response = {
+                    type: `new_shape`,
+                    shape: message.shape,
+                    start: message.start,
+                    end: message.end
+                }
+                console.log(`Response: \n`);
+                console.log(response);
                 server.clients.forEach((client) => {
                     if ((client != ws) && (client.readyState === WebSocket.OPEN)) {
                         client.send(JSON.stringify(response));

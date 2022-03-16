@@ -15,15 +15,19 @@
                 messageBox = document.getElementById(`infoBox`);
                 
                 ws.addEventListener(`open`, () => {
-                    messageBox.innerHTML += `You are connected to the server! <br>`;
+                    messageBox.innerHTML += `<p>You are connected to the server! </p>`;
                 });
 
                 ws.addEventListener(`message`, data => {
                     var message = JSON.parse(data.data);
                     switch(message.type) { 
                         case `new_user`: 
-                            messageBox.innerHTML += `<span class="username">${message.name}</span> has connected to the server <br>`;
+                            messageBox.innerHTML += `<p><span class="username">${message.name}</span> has connected to the server </p>`;
                             break;  
+                        case `new_shape`:
+                            console.log(message);
+                            drawRemoteShape(message.shape, message.start, message.end);
+                            break;
                         default: 
                             break; 
                     }; 
@@ -54,7 +58,7 @@
                 connect.style.color = `green`;
                 connect.disabled = true;
                 nameInput.disabled = true;   
-                messageBox.innerHTML += `Your username for this session is <span class="username">${userName}</span>`;            
+                messageBox.innerHTML += `<p>Your username for this session is <span class="username">${userName}</span></p>`;            
                 changeShape(1);
             }
             function changeShape(nr){
@@ -92,7 +96,7 @@
             function restoreImage(){
                 ctx.putImageData(canvasMemory, 0, 0);
             }
-            function mouseDown(event){;
+            function mouseDown(event){
                 if (event.which == 2){
                     event.preventDefault(); //Limits menu to save/copy image
                 }
@@ -110,6 +114,14 @@
                     var position = getCanvasCoordinates(event);
                     console.log(`End coordinates: x = ${position.x}, y = ${position.y}`);
                     drawShapes(position);
+
+                    var sendShape = {
+                        type: `NEW_SHAPE`,
+                        shape: drawShape,
+                        start: startCoordinates,
+                        end: position
+                    };
+                    ws.send(JSON.stringify(sendShape));
                 }
             }
             function mouseMove(e, t){
@@ -130,6 +142,17 @@
                 }
                 if (drawShape == 3) {
                     drawCircle(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y);
+                }
+            }
+            function drawRemoteShape(shape, start, end){
+                if(shape == 1) { 
+                    drawLine(start.x, start.y, end.x, end.y);
+                }
+                if (shape == 2) {
+                    drawRect(start.x, start.y, end.x, end.y);
+                }
+                if (shape == 3) {
+                    drawCircle(start.x, start.y, end.x, end.y);
                 }
             }
             function drawRect(x1, y1, x2, y2){

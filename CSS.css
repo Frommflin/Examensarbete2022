@@ -33,6 +33,9 @@
     padding: 5px;
     width: 400px;
 }
+#infoBox p{
+    margin: 0px;
+}
 .settingBox{
     margin-bottom: 10px;
 }
