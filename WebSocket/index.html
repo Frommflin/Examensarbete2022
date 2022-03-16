@@ -9,7 +9,7 @@
             var draw = false;
             var messageBox, userName, nameInput, connect, drawShape;
             var canvas, ctx, startCoordinates, canvasMemory;
-            var fillColor, strokeColor;
+            var fillColor, strokeColor, lineSize;
             
             function initServer(){
                 messageBox = document.getElementById(`infoBox`);
@@ -26,7 +26,7 @@
                             break;  
                         case `new_shape`:
                             console.log(message);
-                            drawRemoteShape(message.shape, message.start, message.end);
+                            drawRemoteShape(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
                             break;
                         default: 
                             break; 
@@ -75,14 +75,26 @@
             }
             function startCanvas(){
                 canvas = document.getElementById(`canvasBox`);
+                ctx = canvas.getContext(`2d`);
+                getLocalSettings();
+            }
+            function getLocalSettings(){
                 var fillInput = document.getElementById(`fillColor`);
                 var strokeColorInput = document.getElementById(`strokeColor`);
                 var strokeWidthInput = document.getElementById(`strokeSize`);
 
-                ctx = canvas.getContext(`2d`);
-                ctx.fillStyle = fillInput.value;
-                ctx.strokeStyle = strokeColorInput.value;
-                ctx.lineWidth = strokeWidthInput.value;
+                console.log(`in GetLocalSEttings(): \n fill: ${fillInput.value}, stroke: ${strokeColorInput.value}, size: ${strokeWidthInput.value}`);
+
+                setFill(fillInput.value);
+                setStroke(strokeColorInput.value);
+                setWidth(strokeWidthInput.value);
+                
+                applySettings(fillInput.value, strokeColorInput.value, strokeWidthInput.value);
+            }
+            function applySettings(fill, stroke, line){
+                ctx.fillStyle = fill;
+                ctx.strokeStyle = stroke;
+                ctx.lineWidth = line;
             }
             function getCanvasCoordinates(event){
                 var box = event.target.getBoundingClientRect();
@@ -101,6 +113,7 @@
                     event.preventDefault(); //Limits menu to save/copy image
                 }
                 if (event.which == 1){
+                    getLocalSettings();
                     draw = true;
                     startCoordinates = getCanvasCoordinates(event);
                     console.log(`Starting coordinates: x = ${startCoordinates.x}, y = ${startCoordinates.y}`);
@@ -115,13 +128,18 @@
                     console.log(`End coordinates: x = ${position.x}, y = ${position.y}`);
                     drawShapes(position);
 
+                    console.log(`fill: ${fillColor}, stroke: ${strokeColor}, size: ${lineSize}`);
                     var sendShape = {
                         type: `NEW_SHAPE`,
                         shape: drawShape,
                         start: startCoordinates,
-                        end: position
+                        end: position,
+                        fill: fillColor,
+                        stroke: strokeColor,
+                        size: lineSize
                     };
                     ws.send(JSON.stringify(sendShape));
+                    console.log(JSON.stringify(sendShape));
                 }
             }
             function mouseMove(e, t){
@@ -135,27 +153,29 @@
             }
             function drawShapes(endCoordinates){
                 if(drawShape == 1) { 
-                    drawLine(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y);
+                    drawLine(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y, fillColor, strokeColor, lineSize);
                 }
                 if (drawShape == 2) {
-                    drawRect(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y);
+                    drawRect(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y, fillColor, strokeColor, lineSize);
                 }
                 if (drawShape == 3) {
-                    drawCircle(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y);
+                    drawCircle(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y, fillColor, strokeColor, lineSize);
                 }
             }
-            function drawRemoteShape(shape, start, end){
+            function drawRemoteShape(shape, start, end, fill, stroke, size){
                 if(shape == 1) { 
-                    drawLine(start.x, start.y, end.x, end.y);
+                    drawLine(start.x, start.y, end.x, end.y, fill, stroke, size);
                 }
                 if (shape == 2) {
-                    drawRect(start.x, start.y, end.x, end.y);
+                    drawRect(start.x, start.y, end.x, end.y, fill, stroke, size);
                 }
                 if (shape == 3) {
-                    drawCircle(start.x, start.y, end.x, end.y);
+                    drawCircle(start.x, start.y, end.x, end.y, fill, stroke, size);
                 }
             }
-            function drawRect(x1, y1, x2, y2){
+            function drawRect(x1, y1, x2, y2, fill, stroke, line){
+                applySettings(fill, stroke, line);
+
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
                 ctx.lineTo(x2,y1);
@@ -166,14 +186,18 @@
                 ctx.fill();
                 ctx.stroke();
             }
-            function drawLine(x1, y1, x2, y2){
+            function drawLine(x1, y1, x2, y2, fill, stroke, line){
+                applySettings(fill, stroke, line);
+
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
                 ctx.lineTo(x2,y2);
                 ctx.closePath();
                 ctx.stroke();
             }
-            function drawCircle(x1, y1, x2, y2){
+            function drawCircle(x1, y1, x2, y2, fill, stroke, line){
+                applySettings(fill, stroke, line);
+
                 var x;
                 var y;
                 if (x1 > x2){
@@ -203,14 +227,14 @@
             }
             function setFill(color){
                 fillColor = color;
-                ctx.fillStyle = fillColor;
+                
             }
             function setStroke(color){
                 strokeColor = color;
-                ctx.strokeStyle = strokeColor;
+                
             }
             function setWidth(pixels){
-                ctx.lineWidth = pixels;
+                lineSize = pixels;
             }
         </script>
     </head>

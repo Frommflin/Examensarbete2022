@@ -16,7 +16,7 @@ server.on(`connection`, ws => {
         } catch (error) {
             console.log(error);
         }
-        console.log(`Message: \n`);
+        console.log(`Message:`);
         console.log(message);
         switch(message.type) { 
             case `NEW_USER`: 
@@ -36,9 +36,12 @@ server.on(`connection`, ws => {
                     type: `new_shape`,
                     shape: message.shape,
                     start: message.start,
-                    end: message.end
+                    end: message.end,
+                    fill: message.fill,
+                    stroke: message.stroke,
+                    size: message.size
                 }
-                console.log(`Response: \n`);
+                console.log(`Response:`);
                 console.log(response);
                 server.clients.forEach((client) => {
                     if ((client != ws) && (client.readyState === WebSocket.OPEN)) {
