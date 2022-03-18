@@ -20,22 +20,22 @@
                     <button disabled id="opt3" class="optBtns" onclick="changeShape(3)"> • </button>
                 </div>
                 <div>
-                    <button onclick="clearSpace()"> Clear </button>
+                    <button disabled class="settingInput" onclick="clearSpace()"> Clear </button>
                 </div>
             </div>
             <canvas id="canvasBox" width="900" height="500" onmousemove="mouseMove(event, this)" onmousedown="mouseDown(event)" onmouseup="mouseUp(event)"></canvas>
             <div id="settings">
                 <div class="settingBox">
                     <h4>Fill Color</h4>
-                    <input type="color" id="fillColor" value="#56ae9f">
+                    <input disabled type="color" id="fillColor" class="settingInput" value="#56ae9f">
                 </div>
                 <div class="settingBox">
                     <h4>Stroke color</h4>
-                    <input type="color" id="strokeColor">
+                    <input disabled type="color" id="strokeColor" class="settingInput" >
                 </div>
                 <div class="settingBox">
                     <h4>Stroke width</h4>
-                    <input type="number" min="1" max="20" value="2" id="strokeSize">
+                    <input disabled type="number" min="1" max="20" value="2" id="strokeSize" class="settingInput" >
                 </div>
             </div>
         </div>

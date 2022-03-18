@@ -82,6 +82,13 @@ function connectToServer(){
     nameInput.disabled = true;   
     messageBox.innerHTML += `<p>Your username for this session is <span class="username">${userName}</span></p>`;            
     changeShape(1);
+
+    var settingsBtns = document.getElementsByClassName(`settingInput`);
+    for(var a = 0; a<settingsBtns.length; a++){
+        var setting = settingsBtns[a];
+        setting.style.color = `black`;
+        setting.disabled = false;
+    }
 }
 function startCanvas(){
     canvas = document.getElementById(`canvasBox`);
