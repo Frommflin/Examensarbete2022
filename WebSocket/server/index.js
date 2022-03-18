@@ -16,8 +16,7 @@ server.on(`connection`, ws => {
         } catch (error) {
             console.log(error);
         }
-        console.log(`Message:`);
-        console.log(message);
+
         switch(message.type) { 
             case `NEW_USER`: 
                 console.log(`Client has submitted a namne: ${message.name}`);
@@ -41,8 +40,6 @@ server.on(`connection`, ws => {
                     stroke: message.stroke,
                     size: message.size
                 }
-                console.log(`Response:`);
-                console.log(response);
                 server.clients.forEach((client) => {
                     if ((client != ws) && (client.readyState === WebSocket.OPEN)) {
                         client.send(JSON.stringify(response));

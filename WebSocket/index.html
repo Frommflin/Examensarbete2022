@@ -11,28 +11,6 @@
             var canvas, ctx, startCoordinates, canvasMemory;
             var fillColor, strokeColor, lineSize;
             
-            function initServer(){
-                messageBox = document.getElementById(`infoBox`);
-                
-                ws.addEventListener(`open`, () => {
-                    messageBox.innerHTML += `<p>You are connected to the server! </p>`;
-                });
-
-                ws.addEventListener(`message`, data => {
-                    var message = JSON.parse(data.data);
-                    switch(message.type) { 
-                        case `new_user`: 
-                            messageBox.innerHTML += `<p><span class="username">${message.name}</span> has connected to the server </p>`;
-                            break;  
-                        case `new_shape`:
-                            console.log(message);
-                            drawRemoteShape(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
-                            break;
-                        default: 
-                            break; 
-                    }; 
-                })
-            }
             function checkName(){
                 nameInput = document.getElementById(`namebox`);
                 userName = nameInput.value;
@@ -45,6 +23,57 @@
                     connect.disabled = false;
                     connect.style.color = `blue`;
                 }
+            }
+            function clearSpace(){
+                ctx.clearRect(0,0,900,500);
+            }
+            function setFill(color){
+                fillColor = color;
+            }
+            function setStroke(color){
+                strokeColor = color;
+            }
+            function setWidth(pixels){
+                lineSize = pixels;
+            }
+            function applySettings(fill, stroke, line){
+                ctx.fillStyle = fill;
+                ctx.strokeStyle = stroke;
+                ctx.lineWidth = line;
+            }
+            function changeShape(nr){
+                var optBtns = document.getElementsByClassName(`optBtns`);
+                for(var a = 0; a<optBtns.length; a++){
+                    var option = optBtns[a];
+                    option.style.color = `black`;
+                    option.disabled = false;
+                }
+                var active = document.getElementById(`opt${nr}`);
+                active.disabled = true;
+                active.style.color = `green`;
+                drawShape = nr;
+            }
+            function getCanvasCoordinates(event){
+                var box = event.target.getBoundingClientRect();
+                var mx = event.clientX - box.left; // mouse x-coordinate
+                var my = event.clientY - box.top;  // mouse y-coordinate
+                return {x: mx, y: my};
+            }
+            function saveImage(){
+                canvasMemory = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            }
+            function restoreImage(){
+                ctx.putImageData(canvasMemory, 0, 0);
+            }
+            function getLocalSettings(){
+                var fillInput = document.getElementById(`fillColor`);
+                var strokeColorInput = document.getElementById(`strokeColor`);
+                var strokeWidthInput = document.getElementById(`strokeSize`);
+
+                setFill(fillInput.value);
+                setStroke(strokeColorInput.value);
+                setWidth(strokeWidthInput.value);
+                applySettings(fillInput.value, strokeColorInput.value, strokeWidthInput.value);
             }
             function connectToServer(){
 
@@ -61,117 +90,10 @@
                 messageBox.innerHTML += `<p>Your username for this session is <span class="username">${userName}</span></p>`;            
                 changeShape(1);
             }
-            function changeShape(nr){
-                var optBtns = document.getElementsByClassName(`optBtns`);
-                for(var a = 0; a<optBtns.length; a++){
-                    var option = optBtns[a];
-                    option.style.color = `black`;
-                    option.disabled = false;
-                }
-                var active = document.getElementById(`opt${nr}`);
-                active.disabled = true;
-                active.style.color = `green`;
-                drawShape = nr;
-            }
             function startCanvas(){
                 canvas = document.getElementById(`canvasBox`);
                 ctx = canvas.getContext(`2d`);
                 getLocalSettings();
-            }
-            function getLocalSettings(){
-                var fillInput = document.getElementById(`fillColor`);
-                var strokeColorInput = document.getElementById(`strokeColor`);
-                var strokeWidthInput = document.getElementById(`strokeSize`);
-
-                console.log(`in GetLocalSEttings(): \n fill: ${fillInput.value}, stroke: ${strokeColorInput.value}, size: ${strokeWidthInput.value}`);
-
-                setFill(fillInput.value);
-                setStroke(strokeColorInput.value);
-                setWidth(strokeWidthInput.value);
-                
-                applySettings(fillInput.value, strokeColorInput.value, strokeWidthInput.value);
-            }
-            function applySettings(fill, stroke, line){
-                ctx.fillStyle = fill;
-                ctx.strokeStyle = stroke;
-                ctx.lineWidth = line;
-            }
-            function getCanvasCoordinates(event){
-                var box = event.target.getBoundingClientRect();
-                var mx = event.clientX - box.left; // mouse x-coordinate
-                var my = event.clientY - box.top;  // mouse y-coordinate
-                return {x: mx, y: my};
-            }
-            function saveImage(){
-                canvasMemory = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            }
-            function restoreImage(){
-                ctx.putImageData(canvasMemory, 0, 0);
-            }
-            function mouseDown(event){
-                if (event.which == 2){
-                    event.preventDefault(); //Limits menu to save/copy image
-                }
-                if (event.which == 1){
-                    getLocalSettings();
-                    draw = true;
-                    startCoordinates = getCanvasCoordinates(event);
-                    console.log(`Starting coordinates: x = ${startCoordinates.x}, y = ${startCoordinates.y}`);
-                    saveImage();
-                }
-            }
-            function mouseUp(event){
-                if (event.which == 1){
-                    draw = false;
-                    restoreImage();
-                    var position = getCanvasCoordinates(event);
-                    console.log(`End coordinates: x = ${position.x}, y = ${position.y}`);
-                    drawShapes(position);
-
-                    console.log(`fill: ${fillColor}, stroke: ${strokeColor}, size: ${lineSize}`);
-                    var sendShape = {
-                        type: `NEW_SHAPE`,
-                        shape: drawShape,
-                        start: startCoordinates,
-                        end: position,
-                        fill: fillColor,
-                        stroke: strokeColor,
-                        size: lineSize
-                    };
-                    ws.send(JSON.stringify(sendShape));
-                    console.log(JSON.stringify(sendShape));
-                }
-            }
-            function mouseMove(e, t){
-                if (draw === true){
-                    restoreImage();
-                    var position = getCanvasCoordinates(e);
-                    drawShapes(position);
-                } else {
-                    return;
-                }
-            }
-            function drawShapes(endCoordinates){
-                if(drawShape == 1) { 
-                    drawLine(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y, fillColor, strokeColor, lineSize);
-                }
-                if (drawShape == 2) {
-                    drawRect(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y, fillColor, strokeColor, lineSize);
-                }
-                if (drawShape == 3) {
-                    drawCircle(startCoordinates.x, startCoordinates.y, endCoordinates.x, endCoordinates.y, fillColor, strokeColor, lineSize);
-                }
-            }
-            function drawRemoteShape(shape, start, end, fill, stroke, size){
-                if(shape == 1) { 
-                    drawLine(start.x, start.y, end.x, end.y, fill, stroke, size);
-                }
-                if (shape == 2) {
-                    drawRect(start.x, start.y, end.x, end.y, fill, stroke, size);
-                }
-                if (shape == 3) {
-                    drawCircle(start.x, start.y, end.x, end.y, fill, stroke, size);
-                }
             }
             function drawRect(x1, y1, x2, y2, fill, stroke, line){
                 applySettings(fill, stroke, line);
@@ -222,19 +144,76 @@
                 ctx.fill();
                 ctx.stroke();
             }
-            function clearSpace(){
-                ctx.clearRect(0,0,900,500);
+            function drawShapes(shape, start, end, fill, stroke, size){
+                if(shape == 1) { 
+                    drawLine(start.x, start.y, end.x, end.y, fill, stroke, size);
+                }
+                if (shape == 2) {
+                    drawRect(start.x, start.y, end.x, end.y, fill, stroke, size);
+                }
+                if (shape == 3) {
+                    drawCircle(start.x, start.y, end.x, end.y, fill, stroke, size);
+                }
             }
-            function setFill(color){
-                fillColor = color;
+            function mouseDown(event){
+                if (event.which == 1){ //Left-click on mouse
+                    getLocalSettings();
+                    draw = true;
+                    startCoordinates = getCanvasCoordinates(event);
+                    saveImage();
+                }
+                if (event.which == 2){ //Right-click on mouse
+                    event.preventDefault(); //Limits menu to save/copy image
+                }
+            }
+            function mouseUp(event){
+                if (event.which == 1){
+                    draw = false;
+                    restoreImage();
+                    var position = getCanvasCoordinates(event);
+                    drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize);
+
+                    var sendShape = {
+                        type: `NEW_SHAPE`,
+                        shape: drawShape,
+                        start: startCoordinates,
+                        end: position,
+                        fill: fillColor,
+                        stroke: strokeColor,
+                        size: lineSize
+                    };
+                    ws.send(JSON.stringify(sendShape));
+                }
+            }
+            function mouseMove(e, t){
+                if (draw === true){
+                    restoreImage();
+                    var position = getCanvasCoordinates(e);
+                    drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize);
+                } else {
+                    return;
+                }
+            }
+            function initServer(){
+                messageBox = document.getElementById(`infoBox`);
                 
-            }
-            function setStroke(color){
-                strokeColor = color;
-                
-            }
-            function setWidth(pixels){
-                lineSize = pixels;
+                ws.addEventListener(`open`, () => {
+                    messageBox.innerHTML += `<p>You are connected to the server! </p>`;
+                });
+
+                ws.addEventListener(`message`, data => {
+                    var message = JSON.parse(data.data);
+                    switch(message.type) { 
+                        case `new_user`: 
+                            messageBox.innerHTML += `<p><span class="username">${message.name}</span> has connected to the server </p>`;
+                            break;  
+                        case `new_shape`:
+                            drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
+                            break;
+                        default: 
+                            break; 
+                    }; 
+                })
             }
         </script>
     </head>
@@ -257,18 +236,17 @@
             </div>
             <canvas id="canvasBox" width="900" height="500" onmousemove="mouseMove(event, this)" onmousedown="mouseDown(event)" onmouseup="mouseUp(event)"></canvas>
             <div id="settings">
-                <!-- colorpickers -->
                 <div class="settingBox">
                     <h4>Fill Color</h4>
-                    <input type="color" id="fillColor" value="#56ae9f" onchange="setFill(this.value)">
+                    <input type="color" id="fillColor" value="#56ae9f">
                 </div>
                 <div class="settingBox">
                     <h4>Stroke color</h4>
-                    <input type="color" id="strokeColor" onchange="setStroke(this.value)">
+                    <input type="color" id="strokeColor">
                 </div>
                 <div class="settingBox">
                     <h4>Stroke width</h4>
-                    <input type="number" min="1" max="20" value="2" id="strokeSize" onchange="setWidth(this.value)" >
+                    <input type="number" min="1" max="20" value="2" id="strokeSize">
                 </div>
             </div>
         </div>
