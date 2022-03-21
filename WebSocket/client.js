@@ -19,6 +19,11 @@ function checkName(){
 }
 function clearSpace(){
     ctx.clearRect(0,0,900,500);
+
+    var message = {
+        type: `CLEAR_SPACE`
+    };
+    ws.send(JSON.stringify(message));
 }
 function setFill(color){
     fillColor = color;
@@ -210,6 +215,8 @@ function initServer(){
             case `new_shape`:
                 drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
                 break;
+            case `clear_space`:
+                clearSpace();
             default: 
                 break; 
         }; 

@@ -46,6 +46,16 @@ server.on(`connection`, ws => {
                     }
                 });
                 break;  
+            case `CLEAR_SPACE`:
+                response = {
+                    type: `clear_space`
+                }
+                server.clients.forEach((client) => {
+                    if ((client != ws) && (client.readyState === WebSocket.OPEN)) {
+                        client.send(JSON.stringify(response));
+                    }
+                });
+                break;  
             default: 
                 break; 
         }; 
