@@ -25,13 +25,9 @@ function clearSpace(){
     };
     ws.send(JSON.stringify(message));
 }
-function setFill(color){
-    fillColor = color;
-}
-function setStroke(color){
-    strokeColor = color;
-}
-function setWidth(pixels){
+function setLocalSettings(fill, stroke, pixels){
+    fillColor = fill;
+    strokeColor = stroke;
     lineSize = pixels;
 }
 function applySettings(fill, stroke, line){
@@ -68,9 +64,7 @@ function getLocalSettings(){
     var strokeColorInput = document.getElementById(`strokeColor`);
     var strokeWidthInput = document.getElementById(`strokeSize`);
 
-    setFill(fillInput.value);
-    setStroke(strokeColorInput.value);
-    setWidth(strokeWidthInput.value);
+    setLocalSettings(fillInput.value, strokeColorInput.value, strokeWidthInput.value);
     applySettings(fillInput.value, strokeColorInput.value, strokeWidthInput.value);
 }
 function connectToServer(){
