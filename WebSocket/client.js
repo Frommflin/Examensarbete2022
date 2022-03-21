@@ -223,5 +223,5 @@ function initServer(){
             default: 
                 break; 
         }; 
-    })
+    });
 }

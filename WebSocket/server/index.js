@@ -68,5 +68,5 @@ server.on(`connection`, ws => {
             default: 
                 break; 
         }; 
-    })
+    });
 });
