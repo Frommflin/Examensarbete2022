@@ -56,6 +56,15 @@ server.on(`connection`, ws => {
                     }
                 });
                 break;  
+            case `SHAPE_CONFIRMED`:
+                response = {
+                    type: `shape_confirmed`
+                }
+                server.clients.forEach((client) => {
+                    if ((client != ws) && (client.readyState === WebSocket.OPEN)) {
+                        client.send(JSON.stringify(response));
+                    }
+                });
             default: 
                 break; 
         }; 

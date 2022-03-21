@@ -143,7 +143,7 @@ function drawCircle(x1, y1, x2, y2, fill, stroke, line){
     ctx.fill();
     ctx.stroke();
 }
-function drawShapes(shape, start, end, fill, stroke, size){
+function drawShapes(shape, start, end, fill, stroke, size, remote){
     if(shape == 1) { 
         drawLine(start.x, start.y, end.x, end.y, fill, stroke, size);
     }
@@ -152,6 +152,13 @@ function drawShapes(shape, start, end, fill, stroke, size){
     }
     if (shape == 3) {
         drawCircle(start.x, start.y, end.x, end.y, fill, stroke, size);
+    }
+
+    if(remote === true){
+        var confirmation = {
+            type: `SHAPE_CONFIRMED`
+        }
+        ws.send(JSON.stringify(confirmation));
     }
 }
 function mouseDown(event){
@@ -188,7 +195,7 @@ function mouseMove(e, t){
     if (draw === true){
         restoreImage();
         var position = getCanvasCoordinates(e);
-        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize);
+        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize, false);
     } else {
         return;
     }
@@ -207,10 +214,12 @@ function initServer(){
                 messageBox.innerHTML += `<p><span class="username">${message.name}</span> has connected to the server </p>`;
                 break;  
             case `new_shape`:
-                drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
+                drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size, true);
                 break;
             case `clear_space`:
                 clearSpace();
+            case `shape_confirmed`:
+                console.log(`Shape confirmed by other clients!`);
             default: 
                 break; 
         }; 
