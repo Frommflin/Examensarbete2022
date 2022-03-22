@@ -177,7 +177,7 @@ function mouseUp(event){
         draw = false;
         restoreImage();
         var position = getCanvasCoordinates(event);
-        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize);
+        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize, false);
 
         var sendShape = {
             type: `NEW_SHAPE`,
