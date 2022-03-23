@@ -249,9 +249,7 @@ function openDataChannel(){
     console.log("Data channel created");
 }
 function StartConnection(){
-    console.log(`Connection created`);
-
-    //Visual changes and canvas shape-setting
+    messageBox.innerHTML += `Your username for this connection is <span class="username">${userName}</span>`;
     connect.innerHTML = `Connected`;
     connect.style.color = `green`;
     connect.disabled = true;
