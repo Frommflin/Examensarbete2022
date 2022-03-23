@@ -26,7 +26,7 @@ function handleMessage (event){
             drawShapes(data.shape, data.start, data.end, data.fill, data.stroke, data.size, true);
             break;
         case `clear_space`:
-            clearSpace();
+            clearSpace(false);
         case `shape_confirmed`:
             console.log(`Shape confirmed by other clients!`);
         default: 
@@ -72,13 +72,14 @@ function checkName(){
         connect.style.color = `blue`;
     }
 }
-function clearSpace(){
+function clearSpace(clicked){
     ctx.clearRect(0,0,900,500);
-
-    var message = {
-        type: `clear_space`
-    };
-    dataChannel.send(JSON.stringify(message));
+    if(clicked === true){
+        var message = {
+            type: `clear_space`
+        };
+        dataChannel.send(JSON.stringify(message));
+    }
 }
 function setLocalSettings(fill, stroke, pixels){
     fillColor = fill;
