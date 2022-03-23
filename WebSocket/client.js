@@ -219,7 +219,7 @@ function initServer(){
             case `clear_space`:
                 clearSpace();
             case `shape_confirmed`:
-                console.log(`Shape confirmed by other clients!`);
+                console.log(`Shape confirmed by other client!`);
             default: 
                 break; 
         }; 

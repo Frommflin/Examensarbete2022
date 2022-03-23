@@ -7,26 +7,43 @@ var draw = false;
 var offerAllowed = false;
 var messageBox, userName, nameInput, connect, drawShape;
 var canvas, ctx, startCoordinates, canvasMemory;
-var fillColor, strokeColor, lineSize;
+var fillColor, strokeColor, lineSize, dataChannel;
 
 function startOffer(){
     offerAllowed = true;
     console.log(`You can send an offer`);
 }
-function handleMessage (event){
-    infoBox.innerHTML += `${event.data} <br>`;
+function handleMessage (event){ 
+    //needs to hold handling for different messages with a switch. 
+    //Some poke on messageBox, some the drawingspace
+    var data = JSON.parse(event.data);
+    console.log(data);
+    switch(data.type) { 
+        case `new_user`: 
+            messageBox.innerHTML += `<p>P2P connection is established with <span class="username">${data.name}</span></p>`;
+            break; 
+        case `new_shape`:
+            drawShapes(data.shape, data.start, data.end, data.fill, data.stroke, data.size, true);
+            break;
+        case `clear_space`:
+            clearSpace();
+        case `shape_confirmed`:
+            console.log(`Shape confirmed by other clients!`);
+        default: 
+            break; 
+    };  
 }
 function handleDataChannelStatusChange(event) {
     var state = dataChannel.readyState;
     console.log("Data channel's status has changed to " + state);
-    if (state === "open") {
-        infoBox.style.borderColor="green"
-        dataChannel.send(`DataChannel is open`);
-        dataChannel.send(`P2P connection is established with ${userName}`);
+    messageBox.innerHTML += `<p>DataChannel is ${state}</p>`;
 
-    } else {
-        infoBox.style.borderColor="red"
-        console.log("DataChannel is closed");
+    if (state === "open") {
+        var usermsg = {
+            type: `new_user`,
+            name: userName
+        }
+        dataChannel.send(JSON.stringify(usermsg));
     }
 }
 function onOffer(offer) { 
@@ -57,6 +74,11 @@ function checkName(){
 }
 function clearSpace(){
     ctx.clearRect(0,0,900,500);
+
+    var message = {
+        type: `clear_space`
+    };
+    dataChannel.send(JSON.stringify(message));
 }
 function setLocalSettings(fill, stroke, pixels){
     fillColor = fill;
@@ -154,7 +176,7 @@ function drawCircle(x1, y1, x2, y2, fill, stroke, line){
     ctx.fill();
     ctx.stroke();
 }
-function drawShapes(shape, start, end, fill, stroke, size){
+function drawShapes(shape, start, end, fill, stroke, size, remote){
     if(shape == 1) { 
         drawLine(start.x, start.y, end.x, end.y, fill, stroke, size);
     }
@@ -163,6 +185,13 @@ function drawShapes(shape, start, end, fill, stroke, size){
     }
     if (shape == 3) {
         drawCircle(start.x, start.y, end.x, end.y, fill, stroke, size);
+    }
+
+    if(remote === true){
+        var confirmation = {
+            type: `shape_confirmed`
+        }
+        dataChannel.send(JSON.stringify(confirmation));
     }
 }
 function mouseDown(event){
@@ -181,14 +210,25 @@ function mouseUp(event){
         draw = false;
         restoreImage();
         var position = getCanvasCoordinates(event);
-        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize);
+        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize, false);
+
+        var sendShape = {
+            type: `new_shape`,
+            shape: drawShape,
+            start: startCoordinates,
+            end: position,
+            fill: fillColor,
+            stroke: strokeColor,
+            size: lineSize
+        };
+        dataChannel.send(JSON.stringify(sendShape));
     }
 }
 function mouseMove(e, t){
     if (draw === true){
         restoreImage();
         var position = getCanvasCoordinates(e);
-        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize);
+        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize, false);
     } else {
         return;
     }
@@ -210,6 +250,21 @@ function openDataChannel(){
 function StartConnection(){
     console.log(`Connection created`);
 
+    //Visual changes and canvas shape-setting
+    connect.innerHTML = `Connected`;
+    connect.style.color = `green`;
+    connect.disabled = true;
+    nameInput.disabled = true;
+    changeShape(1);
+
+    var settingsBtns = document.getElementsByClassName(`settingInput`);
+    for(var a = 0; a<settingsBtns.length; a++){
+        var setting = settingsBtns[a];
+        setting.style.color = `black`;
+        setting.disabled = false;
+    }
+
+    //Connection setup
     localConnection.onicecandidate = function (event) { 
         
         if (event.candidate) { 
@@ -228,11 +283,12 @@ function StartConnection(){
                 console.log(`Offer created by ${userName}:`);
                 console.log(offer);
 
-                ws.send(JSON.stringify({ 
+                var offermsg = {
                     type: `offer`,
-                    name: userName, 
-                    offer: offer 
-                }));
+                    name: userName,
+                    offer: offer
+                };
+                ws.send(JSON.stringify(offermsg)); //sending offer to server
                     
                 localConnection.setLocalDescription(offer);
                 console.log(`Offer set as local description`);
@@ -248,12 +304,15 @@ function StartConnection(){
                 console.log(`Answer created by ${userName}:`);
                 console.log(answer);
                 console.log(`Answer set as local description`);
-                    
-                ws.send(JSON.stringify({ 
-                    type: `answer`, 
+                 
+                
+                var answermsg = {
+                    type: `answer`,
                     name: userName,
-                    answer: answer 
-                })); 
+                    answer: answer
+                };
+                ws.send(JSON.stringify(answermsg)); //sending answer to server
+
                 localConnection.ondatachannel = function (event){
                     dataChannel = event.channel;
                     dataChannel.onopen = handleDataChannelStatusChange;
