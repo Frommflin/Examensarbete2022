@@ -16,7 +16,6 @@ function handleMessage (event){
     //needs to hold handling for different messages with a switch. 
     //Some poke on messageBox, some the drawingspace
     var data = JSON.parse(event.data);
-    console.log(data);
     switch(data.type) { 
         case `new_user`: 
             messageBox.innerHTML += `<p>P2P connection is established with <span class="username">${data.name}</span></p>`;
