@@ -327,7 +327,7 @@ function initServer(){
                 startOffer(); 
                 break; 
             case `offer`: 
-                onOffer(data.offer, data.name);
+                onOffer(data.offer);
                 break; 
             case `answer`: 
                 onAnswer(data.answer); 
