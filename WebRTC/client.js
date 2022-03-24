@@ -11,7 +11,6 @@ var fillColor, strokeColor, lineSize, dataChannel;
 
 function startOffer(){
     offerAllowed = true;
-    console.log(`You can send an offer`);
 }
 function handleMessage (event){ 
     //needs to hold handling for different messages with a switch. 
@@ -28,14 +27,13 @@ function handleMessage (event){
         case `clear_space`:
             clearSpace(false);
         case `shape_confirmed`:
-            console.log(`Shape confirmed by other clients!`);
+            console.log(`Shape confirmed by other client!`);
         default: 
             break; 
     };  
 }
 function handleDataChannelStatusChange(event) {
     var state = dataChannel.readyState;
-    console.log("Data channel's status has changed to " + state);
     messageBox.innerHTML += `<p>DataChannel is ${state}</p>`;
 
     if (state === "open") {
@@ -47,17 +45,14 @@ function handleDataChannelStatusChange(event) {
     }
 }
 function onOffer(offer) { 
-    localConnection.setRemoteDescription(new RTCSessionDescription(offer)); 
-    console.log(`Offer set as remote description`);
+    localConnection.setRemoteDescription(new RTCSessionDescription(offer));
     
 }
 function onAnswer(answer) { 
     localConnection.setRemoteDescription(new RTCSessionDescription(answer));
-    console.log(`Answer set as remote description`); 
 }
 function onCandidate(candidate) { 
     localConnection.addIceCandidate(new RTCIceCandidate(candidate));
-    console.log(`IceCandidate added`); 
 }
 function checkName(){
     nameInput = document.getElementById(`namebox`);
@@ -246,7 +241,6 @@ function openDataChannel(){
     dataChannel.onerror = function(event){
         console.log(`Error occured: ${event.data}`);
     }
-    console.log("Data channel created");
 }
 function StartConnection(){
     messageBox.innerHTML += `Your username for this connection is <span class="username">${userName}</span>`;
@@ -274,24 +268,17 @@ function StartConnection(){
             })); 
         } 
     };
-
     if(offerAllowed == true){
         openDataChannel();
         localConnection.createOffer()
             .then((function (offer) { 
-                console.log(`Offer created by ${userName}:`);
-                console.log(offer);
-
                 var offermsg = {
                     type: `offer`,
                     name: userName,
                     offer: offer
                 };
                 ws.send(JSON.stringify(offermsg)); //sending offer to server
-                    
                 localConnection.setLocalDescription(offer);
-                console.log(`Offer set as local description`);
-                
             }))
             .catch(function (error) { 
                 alert(`An error has occurred: ${error}`); 
@@ -300,10 +287,6 @@ function StartConnection(){
         localConnection.createAnswer()
             .then(function (answer) { 
                 localConnection.setLocalDescription(answer); 
-                console.log(`Answer created by ${userName}:`);
-                console.log(answer);
-                console.log(`Answer set as local description`);
-                 
                 
                 var answermsg = {
                     type: `answer`,
@@ -338,7 +321,6 @@ function initServer(){
     };
     ws.onmessage = function(message){
         var data = JSON.parse(message.data); 
-        console.log(`Recieved message of type '${data.type}'`);
             
         switch(data.type) { 
             case `start_offer`: 

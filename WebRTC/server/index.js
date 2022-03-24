@@ -3,8 +3,6 @@ const server = new WebSocket.Server({ port: 8081 });
 
 server.on(`connection`, ws => {
     console.log(`New client has connected!`);
-    console.log(`Number of live clients: ${server.clients.size}`);
-
     var startmsg = {
         type: `start_offer`
     };
@@ -14,7 +12,6 @@ server.on(`connection`, ws => {
     
     ws.on(`close`, () => {
         console.log(`Client has disconnected!`);
-        console.log(`Number of live clients: ${server.clients.size}`);
     });
     
     ws.on(`message`, data => {
