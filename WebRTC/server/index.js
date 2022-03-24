@@ -21,9 +21,8 @@ server.on(`connection`, ws => {
         var message;
         try {
             message = JSON.parse(data);
-        } catch (e) {
-            console.log(e);
-            ws.send(`Error: ${e}`);
+        } catch (error) {
+            console.log(error);
         }
         server.clients.forEach((client) => {
             if ((client != ws) && (client.readyState === WebSocket.OPEN)) {
@@ -31,4 +30,4 @@ server.on(`connection`, ws => {
             }
         });
     });
-})
+});

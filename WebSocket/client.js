@@ -1,4 +1,4 @@
-const ws = new WebSocket(`ws://localhost:8082`); //uppdate with link for server? wss for secure websockets
+const ws = new WebSocket(`ws://localhost:8082`);
 var draw = false;
 var messageBox, userName, nameInput, connect, drawShape;
 var canvas, ctx, startCoordinates, canvasMemory;
@@ -22,7 +22,7 @@ function clearSpace(clicked){
 
     if(clicked === true){
         var message = {
-            type: `CLEAR_SPACE`
+            type: `clear_space`
         };
         ws.send(JSON.stringify(message));    
     }
@@ -72,7 +72,7 @@ function getLocalSettings(){
 function connectToServer(){
 
     var message = {
-        type: `NEW_USER`,
+        type: `new_user`,
         name: userName
     };
     ws.send(JSON.stringify(message));
@@ -158,7 +158,7 @@ function drawShapes(shape, start, end, fill, stroke, size, remote){
 
     if(remote === true){
         var confirmation = {
-            type: `SHAPE_CONFIRMED`
+            type: `shape_confirmed`
         }
         ws.send(JSON.stringify(confirmation));
     }
@@ -182,7 +182,7 @@ function mouseUp(event){
         drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize, false);
 
         var sendShape = {
-            type: `NEW_SHAPE`,
+            type: `new_shape`,
             shape: drawShape,
             start: startCoordinates,
             end: position,
