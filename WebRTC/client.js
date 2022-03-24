@@ -12,9 +12,7 @@ var fillColor, strokeColor, lineSize, dataChannel;
 function startOffer(){
     offerAllowed = true;
 }
-function handleMessage (event){ 
-    //needs to hold handling for different messages with a switch. 
-    //Some poke on messageBox, some the drawingspace
+function handleMessage (event){
     var data = JSON.parse(event.data);
     switch(data.type) { 
         case `new_user`: 
