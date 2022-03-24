@@ -42,8 +42,7 @@ function handleDataChannelStatusChange(event) {
     }
 }
 function onOffer(offer) { 
-    localConnection.setRemoteDescription(new RTCSessionDescription(offer));
-    
+    localConnection.setRemoteDescription(new RTCSessionDescription(offer));   
 }
 function onAnswer(answer) { 
     localConnection.setRemoteDescription(new RTCSessionDescription(answer));
