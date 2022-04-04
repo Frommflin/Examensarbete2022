@@ -23,8 +23,6 @@ function handleMessage (event){
             break;
         case `clear_space`:
             clearSpace(false);
-        case `shape_confirmed`:
-            console.log(`Shape confirmed by other client!`);
         default: 
             break; 
     };  
@@ -177,13 +175,6 @@ function drawShapes(shape, start, end, fill, stroke, size, remote){
     }
     if (shape == 3) {
         drawCircle(start.x, start.y, end.x, end.y, fill, stroke, size);
-    }
-
-    if(remote === true){
-        var confirmation = {
-            type: `shape_confirmed`
-        }
-        dataChannel.send(JSON.stringify(confirmation));
     }
 }
 function mouseDown(event){
