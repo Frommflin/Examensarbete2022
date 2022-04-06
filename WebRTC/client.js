@@ -193,7 +193,7 @@ function mouseUp(event){
         draw = false;
         restoreImage();
         var position = getCanvasCoordinates(event);
-        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize, false);
+        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize);
 
         var sendShape = {
             type: `new_shape`,
@@ -211,7 +211,7 @@ function mouseMove(e, t){
     if (draw === true){
         restoreImage();
         var position = getCanvasCoordinates(e);
-        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize, false);
+        drawShapes(drawShape, startCoordinates, position, fillColor, strokeColor, lineSize);
     } else {
         return;
     }
