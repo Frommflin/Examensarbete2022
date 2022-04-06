@@ -166,7 +166,7 @@ function drawCircle(x1, y1, x2, y2, fill, stroke, line){
     ctx.fill();
     ctx.stroke();
 }
-function drawShapes(shape, start, end, fill, stroke, size, remote){
+function drawShapes(shape, start, end, fill, stroke, size){
     if(shape == 1) { 
         drawLine(start.x, start.y, end.x, end.y, fill, stroke, size);
     }
