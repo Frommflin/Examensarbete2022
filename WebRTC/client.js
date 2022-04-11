@@ -19,7 +19,7 @@ function handleMessage (event){
             messageBox.innerHTML += `<p>P2P connection is established with <span class="username">${data.name}</span></p>`;
             break; 
         case `new_shape`:
-            drawShapes(data.shape, data.start, data.end, data.fill, data.stroke, data.size, true);
+            drawShapes(data.shape, data.start, data.end, data.fill, data.stroke, data.size);
             break;
         case `clear_space`:
             clearSpace(false);

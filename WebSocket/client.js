@@ -209,10 +209,11 @@ function initServer(){
                 messageBox.innerHTML += `<p><span class="username">${message.name}</span> has connected to the server </p>`;
                 break;  
             case `new_shape`:
-                drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size, true);
+                drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
                 break;
             case `clear_space`:
                 clearSpace(false);
+                break;
             default: 
                 break; 
         }; 
