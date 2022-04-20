@@ -162,7 +162,7 @@ function runTest(id){
             clearInterval(loop);
             return;
         }
-    }, 2000);
+    }, 500);
 }
 
 (function() {
@@ -171,9 +171,16 @@ function runTest(id){
     ws.addEventListener(`open`, () => {
         enterName().then(clickButton);
     });
-    connectBtn.addEventListener("click", function(){
-        for (var a = 0; a < 10; a++){
-            runTest(a+1);
+    ws.addEventListener("message", data => {
+        var message = JSON.parse(data.data);
+        switch(message.type) {
+            case `new_user`:
+                for (var a = 0; a < 10; a++){
+                    runTest(a+1);
+                };
+                break;
+            default:
+                break;
         };
     });
 })();
