@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         TOAST: WebSockets - klient 2
+// @name         TOAST: WebSockets - client 2
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Användarscript för klient 2 i Examensarbetet
+// @description  Userscript for client 2 in Graduation project
 // @author       Klara Frommelin
 // @match        http://localhost/examensarbete/WebSocket/index.html
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=undefined.localhost
@@ -11,7 +11,20 @@
 
 const canvas = document.getElementById("canvasBox");
 const ctx = canvas.getContext(`2d`);
+var connectBtn = document.getElementById("conecctbtn");
 
+function enterName(){
+    var nameInput = document.getElementById("namebox");
+    nameInput.value = "User2";
+    return Promise.resolve(nameInput.dispatchEvent(new KeyboardEvent('keyup', {'key': 'a'})));
+}
+function clickButton(){
+    connectBtn.dispatchEvent(new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+    }));
+}
 function applySettings(fill, stroke, line){
     ctx.fillStyle = fill;
     ctx.strokeStyle = stroke;
@@ -79,13 +92,31 @@ function drawShapes(shape, start, end, fill, stroke, size){
 }
 (function() {
     'use strict';
-    ws.addEventListener(`message`, data => { //ws if found from @match
+    localStorage.setItem("data-2000ms", ("Shape,Bundled Time,Single Time"));
+    ws.addEventListener(`open`, () => { //ws if found from @match
+        enterName().then(clickButton);
+    });
+
+    ws.addEventListener(`message`, data => {
         var message = JSON.parse(data.data);
+        //console.log(message);
+
         switch(message.type) {
             case `new_shape`:
-                console.log("New shape recieved via userscript"); //Need to take time after shape is printed somehow??
-                console.log(message);
-                drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size)
+                drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
+                var endtime = new Date();
+
+                if(message.id == 10){
+                    var starttime = new Date(message.time);
+                    var bundleResult = endtime.getTime() - starttime.getTime();
+                    var singleResult = bundleResult / 10;
+
+/*                  console.log("Start: " + message.time + "/" + starttime.getTime());
+                    console.log("End: " + endtime + "/" + endtime.getTime());
+                    console.log("calculation: " + endtime.getTime() + " - " + starttime.getTime() + " = " + bundleResult); */
+
+                    localStorage.setItem("data-2000ms", (localStorage.getItem("data-2000ms") + "\n" + message.shape + "," + bundleResult + "," + singleResult));
+                }
                 break;
             default:
                 break;
