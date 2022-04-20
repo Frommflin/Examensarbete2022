@@ -1,6 +1,6 @@
 const ws = new WebSocket(`ws://localhost:8081`);
 var configuration = { 
-    "iceServers": [{ "url": "stun:stun.1.google.com:19302" }] 
+    "iceServers": [{ "urls": "stun:stun.1.google.com:19302" }] 
 };
 var localConnection = new RTCPeerConnection(configuration);
 var draw = false; 
