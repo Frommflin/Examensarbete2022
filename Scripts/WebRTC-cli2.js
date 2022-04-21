@@ -127,7 +127,7 @@ function handleMessage (event){
                 var bundleResult = endtime.getTime() - starttime.getTime();
                 var singleResult = bundleResult / 10;
 
-                localStorage.setItem("data-rtc", (localStorage.getItem("data-rtc") + "\n" + message.shape + "," + bundleResult + "," + singleResult));
+                localStorage.setItem("data-rtc", (localStorage.getItem("data-rtc") + "\n" + bundleResult + "," + singleResult));
             }
             break;
         default:
