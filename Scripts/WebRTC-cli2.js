@@ -16,6 +16,8 @@ var configuration = {
 };
 var localConnection = new RTCPeerConnection(configuration);
 var connectBtn = document.getElementById("conecctbtn");
+var nameInput = document.getElementById(`namebox`);
+var messageBox = document.getElementById(`infoBox`);
 var dataChannel;
 
 function enterName(){
@@ -24,11 +26,18 @@ function enterName(){
     return Promise.resolve(nameInput.dispatchEvent(new KeyboardEvent('keyup', {'key': 'a'})));
 }
 function clickButton(){
-    connectBtn.dispatchEvent(new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true
-    }));
+    connectBtn.innerHTML = `Connected`;
+    connectBtn.style.color = `green`;
+    connectBtn.disabled = true;
+    nameInput.disabled = true;
+
+    var settingsBtns = document.getElementsByClassName(`settingInput`);
+    for(var a = 0; a<settingsBtns.length; a++){
+        var setting = settingsBtns[a];
+        setting.style.color = `black`;
+        setting.disabled = false;
+    }
+    StartConnection();
 }
 function applySettings(fill, stroke, line){
     ctx.fillStyle = fill;
@@ -95,9 +104,20 @@ function drawShapes(shape, start, end, fill, stroke, size){
         drawCircle(start.x, start.y, end.x, end.y, fill, stroke, size);
     }
 }
+function onOffer(offer) {
+    localConnection.setRemoteDescription(offer);
+    enterName().then(clickButton);
+}
+function onCandidate(candidate) {
+    localConnection.addIceCandidate(new RTCIceCandidate(candidate));
+}
 function handleMessage (event){
-    var data = JSON.parse(event.data);
-    switch(data.type) {
+    var message = JSON.parse(event.data);
+
+    switch(message.type) {
+        case `new_user`:
+            messageBox.innerHTML += `<p>P2P connection is established with <span class="username">${message.name}</span></p>`;
+            break;
         case `new_shape`:
             drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
 
@@ -107,10 +127,6 @@ function handleMessage (event){
                 var bundleResult = endtime.getTime() - starttime.getTime();
                 var singleResult = bundleResult / 10;
 
-                /*  console.log("Start: " + message.time + "/" + starttime.getTime());
-                    console.log("End: " + endtime + "/" + endtime.getTime());
-                    console.log("calculation: " + endtime.getTime() + " - " + starttime.getTime() + " = " + bundleResult); */
-
                 localStorage.setItem("data-rtc", (localStorage.getItem("data-rtc") + "\n" + message.shape + "," + bundleResult + "," + singleResult));
             }
             break;
@@ -118,21 +134,70 @@ function handleMessage (event){
             break;
     };
 }
+function handleDataChannelStatusChange(event) {
+    var state = dataChannel.readyState;
+    messageBox.innerHTML += `<p>DataChannel is ${state}</p>`;
+
+    if (state === "open") {
+        var usermsg = {
+            type: `new_user`,
+            name: "User2"
+        }
+        dataChannel.send(JSON.stringify(usermsg));
+    }
+}
+function StartConnection(){
+    //Connection setup
+    localConnection.onicecandidate = function (event) {
+        if (event.candidate) {
+            ws.send(JSON.stringify({
+                type: `candidate`,
+                candidate: event.candidate
+            }));
+        }
+    };
+
+    localConnection.createAnswer()
+        .then(function (answer) {
+        console.log("Creating answer");
+        localConnection.setLocalDescription(answer);
+
+        var answermsg = {
+            type: `answer`,
+            answer: answer
+        };
+        console.log(answermsg);
+        ws.send(JSON.stringify(answermsg)); //sending answer to server
+
+        localConnection.ondatachannel = function (event){
+            dataChannel = event.channel;
+            dataChannel.onopen = handleDataChannelStatusChange;
+            dataChannel.onclose = handleDataChannelStatusChange;
+            dataChannel.onerror = function(event){
+                console.log(`Error occured: ${event.data}`);
+            }
+            dataChannel.onmessage = handleMessage;
+        }
+    })
+        .catch(function (error) {
+        alert(`oops...error: ${error}`);
+    })
+}
+
 (function() {
     'use strict';
-    localStorage.setItem("data-rtc", ("Shape,Bundled Time,Single Time"));
+    localStorage.setItem("data-rtc", ("Bundled Time,Single Time"));
     ws.addEventListener(`message`, data => { //ws is found from @match
         var message = JSON.parse(data.data);
         switch(message.type) {
             case `offer`:
-                enterName().then(clickButton);
+                onOffer(message.offer);
+                break;
+            case `candidate`:
+                onCandidate(message.candidate);
                 break;
             default:
                 break;
         };
     });
-    localConnection.ondatachannel = function(event){
-        dataChannel = event.channel;
-        dataChannel.onmessage = handleMessage;
-    }
 })();
