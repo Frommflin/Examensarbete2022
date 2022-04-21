@@ -92,17 +92,13 @@ function drawShapes(shape, start, end, fill, stroke, size){
 }
 (function() {
     'use strict';
-    localStorage.setItem("data", ("Shape,Bundled Time,Single Time"));
-    ws.addEventListener(`open`, () => { //ws if found from @match
-        enterName().then(clickButton);
-    });
-
+    localStorage.setItem("data", ("Bundled Time,Single Time"));
     ws.addEventListener(`message`, data => {
         var message = JSON.parse(data.data);
 
         switch(message.type) {
             case `new_user`:
-                //
+                enterName().then(clickButton);
                 break;
             case `new_shape`:
                 drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
@@ -113,7 +109,7 @@ function drawShapes(shape, start, end, fill, stroke, size){
                     var bundleResult = endtime.getTime() - starttime.getTime();
                     var singleResult = bundleResult / 10;
 
-                    localStorage.setItem("data", (localStorage.getItem("data") + "\n" + message.shape + "," + bundleResult + "," + singleResult));
+                    localStorage.setItem("data", (localStorage.getItem("data") + "\n" + bundleResult + "," + singleResult));
                 }
                 break;
             default:
