@@ -16,6 +16,8 @@ var configuration = {
 };
 var localConnection = new RTCPeerConnection(configuration);
 var connectBtn = document.getElementById("conecctbtn");
+var nameInput = document.getElementById(`namebox`);
+var messageBox = document.getElementById(`infoBox`);
 var min = 0;
 var xMax = canvas.width;
 var yMax = canvas.height;
@@ -27,11 +29,91 @@ function enterName(){
     return Promise.resolve(nameInput.dispatchEvent(new KeyboardEvent('keyup', {'key': 'a'})));
 }
 function clickButton(){
-    connectBtn.dispatchEvent(new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true
-    }));
+    connectBtn.innerHTML = `Connected`;
+    connectBtn.style.color = `green`;
+    connectBtn.disabled = true;
+    nameInput.disabled = true;
+
+    var settingsBtns = document.getElementsByClassName(`settingInput`);
+    for(var a = 0; a<settingsBtns.length; a++){
+        var setting = settingsBtns[a];
+        setting.style.color = `black`;
+        setting.disabled = false;
+    }
+    StartConnection();
+}
+function onAnswer(answer) {
+    console.log("Recieved answer");
+    console.log(answer);
+    localConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    console.log("current remote description:");
+    console.log(localConnection.currentRemoteDescription);
+}
+function onCandidate(candidate) {
+    localConnection.addIceCandidate(new RTCIceCandidate(candidate));
+}
+function handleMessage (event){
+    var data = JSON.parse(event.data);
+    console.log(data);
+    switch(data.type) {
+        case `new_user`:
+            messageBox.innerHTML += `<p>P2P connection is established with <span class="username">${data.name}</span></p>`;
+            for (var a = 0; a < 10; a++){
+                runTest(a+1);
+            };
+            break;
+        default:
+            break;
+    };
+}
+function handleDataChannelStatusChange(event) {
+    var state = dataChannel.readyState;
+    messageBox.innerHTML += `<p>DataChannel is ${state}</p>`;
+
+    if (state === "open") {
+        var usermsg = {
+            type: `new_user`,
+            name: "User1"
+        }
+        dataChannel.send(JSON.stringify(usermsg));
+    }
+}
+function openDataChannel(){
+    var dataChanOpts = {
+        reliable:true
+    };
+
+    dataChannel = localConnection.createDataChannel(`TOASTdc`, dataChanOpts);
+    dataChannel.onopen = handleDataChannelStatusChange;
+    dataChannel.onclose = handleDataChannelStatusChange;
+    dataChannel.onmessage = handleMessage;
+    dataChannel.onerror = function(event){
+        console.log(`Error occured: ${event.data}`);
+    }
+}
+function StartConnection(){
+    localConnection.onicecandidate = function (event) {
+        if (event.candidate) {
+            ws.send(JSON.stringify({
+                type: `candidate`,
+                candidate: event.candidate
+            }));
+        }
+    };
+
+    openDataChannel();
+    localConnection.createOffer()
+        .then((function (offer) {
+        var offermsg = {
+            type: `offer`,
+            offer: offer
+        };
+        ws.send(JSON.stringify(offermsg)); //sending offer to server
+        localConnection.setLocalDescription(offer);
+    }))
+        .catch(function (error) {
+        alert(`An error has occurred: ${error}`);
+    })
 }
 function applySettings(fill, stroke, line){
     ctx.fillStyle = fill;
@@ -132,7 +214,6 @@ function runTest(id){
         counter++;
         localStorage.setItem("counter", counter);
 
-
         //Put coordinates into object
         var x1 = Math.floor(Math.random() * xMax) + min;
         var x2 = Math.floor(Math.random() * xMax) + min;
@@ -142,10 +223,8 @@ function runTest(id){
         endCoordinates = {x: x2, y: y2};
 
         //Randomize fill- and stroke color and line width
-        var randomFillColor = Math.floor(Math.random()*16777215).toString(16);
-        var hexCodeFill = "#" + randomFillColor;
-        var randomStrokeColor = Math.floor(Math.random()*16777215).toString(16);
-        var hexCodeStroke = "#" + randomStrokeColor;
+        var hexCodeFill = "#xxxxxx".replace(/x/g, y=>(Math.random()*16|0).toString(16));
+        var hexCodeStroke = "#xxxxxx".replace(/x/g, y=>(Math.random()*16|0).toString(16));
         var lineWidth = Math.floor(Math.random() * 10) + 1;
 
         //Randomize shape to be drawn
@@ -155,49 +234,36 @@ function runTest(id){
             bubbles: true,
             cancelable: true
         }));
-        console.log("shape " + shapeNr);
 
         //Draw shape with generated randomized data
         mouseUpSimulation(shapeNr, startCoordinates, endCoordinates, hexCodeFill, hexCodeStroke, lineWidth, id);
 
-        if(counter == 50)
+        if(counter == 50) //Stops the drawing loop
         {
-            alert("Done with draw operations!");
             clearInterval(loop);
             return;
         }
-    }, 2000);
-}
-function handleMessage (event){
-    var data = JSON.parse(event.data);
-    console.log(data);
-    switch(data.type) {
-        case `new_user`:
-                for (var a = 0; a < 10; a++){
-                    runTest(a+1);
-                };
-                break;
-        default:
-            break;
-    };
+    }, 500);
 }
 (function() {
     'use strict';
     localStorage.setItem("counter","");
     ws.addEventListener(`message`, data => { //ws is found from @match
         var message = JSON.parse(data.data);
-
+        console.log(message);
         switch(message.type) {
             case `start_offer`:
                 enterName().then(clickButton);
                 alert("WAIT");
                 break;
+            case `answer`:
+                onAnswer(message.answer);
+                break;
+            case `candidate`:
+                onCandidate(message.candidate);
+                break;
             default:
                 break;
         }
     });
-    localConnection.ondatachannel = function(event){
-        dataChannel = event.channel;
-        dataChannel.onmessage = handleMessage;
-    }
 })();
