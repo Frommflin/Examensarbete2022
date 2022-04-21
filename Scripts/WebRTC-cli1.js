@@ -43,18 +43,13 @@ function clickButton(){
     StartConnection();
 }
 function onAnswer(answer) {
-    console.log("Recieved answer");
-    console.log(answer);
     localConnection.setRemoteDescription(new RTCSessionDescription(answer));
-    console.log("current remote description:");
-    console.log(localConnection.currentRemoteDescription);
 }
 function onCandidate(candidate) {
     localConnection.addIceCandidate(new RTCIceCandidate(candidate));
 }
 function handleMessage (event){
     var data = JSON.parse(event.data);
-    console.log(data);
     switch(data.type) {
         case `new_user`:
             messageBox.innerHTML += `<p>P2P connection is established with <span class="username">${data.name}</span></p>`;
