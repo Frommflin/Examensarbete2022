@@ -15,7 +15,7 @@ var connectBtn = document.getElementById("conecctbtn");
 var min = 0;
 var xMax = canvas.width;
 var yMax = canvas.height;
-var shapeOpt, startCoordinates, endCoordinates, date;
+var startCoordinates, endCoordinates, date;
 
 function enterName(){
     var nameInput = document.getElementById("namebox");
@@ -84,7 +84,7 @@ function drawCircle(x1, y1, x2, y2, fill, stroke, line){
     ctx.stroke();
 }
 function drawShapes(shape, start, end, fill, stroke, size){
-    if(shape == 1) {
+    if (shape == 1) {
         drawLine(start.x, start.y, end.x, end.y, fill, stroke, size);
     }
     if (shape == 2) {
@@ -138,10 +138,8 @@ function runTest(id){
         endCoordinates = {x: x2, y: y2};
 
         //Randomize fill- and stroke color and line width
-        var randomFillColor = Math.floor(Math.random()*16777215).toString(16);
-        var hexCodeFill = "#" + randomFillColor;
-        var randomStrokeColor = Math.floor(Math.random()*16777215).toString(16);
-        var hexCodeStroke = "#" + randomStrokeColor;
+        var hexCodeFill = "#xxxxxx".replace(/x/g, y=>(Math.random()*16|0).toString(16));
+        var hexCodeStroke = "#xxxxxx".replace(/x/g, y=>(Math.random()*16|0).toString(16));
         var lineWidth = Math.floor(Math.random() * 10) + 1;
 
         //Randomize shape to be drawn
@@ -151,14 +149,12 @@ function runTest(id){
             bubbles: true,
             cancelable: true
         }));
-        console.log("shape " + shapeNr);
 
         //Draw shape with generated randomized data
         mouseUpSimulation(shapeNr, startCoordinates, endCoordinates, hexCodeFill, hexCodeStroke, lineWidth, id);
 
-        if(counter == 50)
+        if(counter == 50) //Stops the drawing loop
         {
-            alert("Done with draw operations!");
             clearInterval(loop);
             return;
         }
