@@ -53,9 +53,27 @@ function handleMessage (event){
     switch(data.type) {
         case `new_user`:
             messageBox.innerHTML += `<p>P2P connection is established with <span class="username">${data.name}</span></p>`;
-            for (var a = 0; a < 10; a++){
-                runTest(a+1);
-            };
+            var counter = 0;
+
+            counter = parseInt(localStorage.getItem("counter"));
+            if(isNaN(counter))
+            {
+                counter = 0;
+            }
+
+            var loop = setInterval(function(){
+                //Keep track of rounds
+                counter++;
+                localStorage.setItem("counter", counter);
+
+                runTest();
+
+                if(counter == 50) //Stops the drawing loop
+                {
+                    clearInterval(loop);
+                    return;
+                }
+            }, 500);
             break;
         default:
             break;
@@ -195,20 +213,8 @@ function mouseUpSimulation(drawShape, startCoordinates, position, fillColor, str
     };
     dataChannel.send(JSON.stringify(sendShape)); //dataChannel is found from @match
 }
-function runTest(id){
-    var counter = 0;
-
-    counter = parseInt(localStorage.getItem("counter"));
-    if(isNaN(counter))
-    {
-        counter = 0;
-    }
-
-    var loop = setInterval(function(){
-        //Keep track of rounds
-        counter++;
-        localStorage.setItem("counter", counter);
-
+function runTest(){
+    for (var a = 1; a < 1001; a++){
         //Put coordinates into object
         var x1 = Math.floor(Math.random() * xMax) + min;
         var x2 = Math.floor(Math.random() * xMax) + min;
@@ -231,14 +237,8 @@ function runTest(id){
         }));
 
         //Draw shape with generated randomized data
-        mouseUpSimulation(shapeNr, startCoordinates, endCoordinates, hexCodeFill, hexCodeStroke, lineWidth, id);
-
-        if(counter == 50) //Stops the drawing loop
-        {
-            clearInterval(loop);
-            return;
-        }
-    }, 500);
+        mouseUpSimulation(shapeNr, startCoordinates, endCoordinates, hexCodeFill, hexCodeStroke, lineWidth, a);
+    };
 }
 (function() {
     'use strict';
