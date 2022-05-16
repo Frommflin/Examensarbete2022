@@ -92,7 +92,7 @@ function drawShapes(shape, start, end, fill, stroke, size){
 }
 (function() {
     'use strict';
-    localStorage.setItem("data", ("Bundled Time,Single Time"));
+    localStorage.setItem("data", ("Time"));
     ws.addEventListener(`message`, data => {
         var message = JSON.parse(data.data);
 
