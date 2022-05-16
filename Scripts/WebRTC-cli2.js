@@ -121,13 +121,12 @@ function handleMessage (event){
         case `new_shape`:
             drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
 
-            if(message.id == 10){
+            if(message.id == 1000){
                 var endtime = new Date();
                 var starttime = new Date(message.time);
                 var bundleResult = endtime.getTime() - starttime.getTime();
-                var singleResult = bundleResult / 10;
 
-                localStorage.setItem("data-rtc", (localStorage.getItem("data-rtc") + "\n" + bundleResult + "," + singleResult));
+                localStorage.setItem("data-rtc", (localStorage.getItem("data-rtc") + "\n" + bundleResult));
             }
             break;
         default:
@@ -183,10 +182,9 @@ function StartConnection(){
         alert(`oops...error: ${error}`);
     })
 }
-
 (function() {
     'use strict';
-    localStorage.setItem("data-rtc", ("Bundled Time,Single Time"));
+    localStorage.setItem("data-rtc", ("Time"));
     ws.addEventListener(`message`, data => { //ws is found from @match
         var message = JSON.parse(data.data);
         switch(message.type) {
