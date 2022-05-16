@@ -103,13 +103,12 @@ function drawShapes(shape, start, end, fill, stroke, size){
             case `new_shape`:
                 drawShapes(message.shape, message.start, message.end, message.fill, message.stroke, message.size);
 
-                if(message.id == 10){
+                if(message.id == 1000){
                     var endtime = new Date();
                     var starttime = new Date(message.time);
                     var bundleResult = endtime.getTime() - starttime.getTime();
-                    var singleResult = bundleResult / 10;
 
-                    localStorage.setItem("data", (localStorage.getItem("data") + "\n" + bundleResult + "," + singleResult));
+                    localStorage.setItem("data", (localStorage.getItem("data") + "\n" + bundleResult));
                 }
                 break;
             default:
